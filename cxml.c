@@ -548,3 +548,59 @@ cx_doc cx_parse(char* data, u32 len, bool strict)
     free(content.data);
     return result;
 }
+
+#ifdef _WIN32
+#include <windows.h>
+
+static HANDLE get_file_handle(const char* file_name, bool write) 
+{
+	HANDLE hFile;
+	hFile = CreateFile(file_name,
+		write ? GENERIC_WRITE : GENERIC_READ,
+		write ? 0 : FILE_SHARE_READ,
+		null,
+		write ? CREATE_ALWAYS : OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL ,
+		null);
+
+    if (hFile == INVALID_HANDLE_VALUE) 
+    {
+        DWORD err = GetLastError();
+        return null;
+    }
+
+    return hFile;
+}
+
+u64 read_file(const char* file_name, char** file_content)
+{
+    HANDLE hFile = get_file_handle(file_name, false);
+    LARGE_INTEGER file_size_li;
+    if (GetFileSizeEx(hFile, &file_size_li) == 0) {
+        return null;
+    }
+    size_t file_size = file_size_li.QuadPart;
+
+    char* buf = malloc(file_size+1);
+    DWORD read = 0;
+    if (ReadFile(hFile, buf, file_size, &read, null) == 0 || read == 0) {
+        return null;
+    }
+    CloseHandle(hFile);
+    buf[file_size] = '\0';
+    *file_content = buf;
+    return file_size;
+}
+
+cx_doc cx_parse_file(char* filename, bool strict)
+{
+    char* buf;
+    u64 file_size = read_file(filename, &buf);
+    cx_doc result;
+    if (file_size == 0) {
+        result.err = CX_FILE_NOT_FOUND;
+        return result;
+    }
+    return cx_parse(buf, file_size, strict);
+}
+#endif

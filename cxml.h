@@ -57,6 +57,7 @@ typedef enum {
     CX_UNEXPECTED_TEXT,
     CX_INVALID_ATTR_VALUE,
     CX_INVALID_CLOSING_TAG,
+    CX_FILE_NOT_FOUND,
     //....
     CX_ERROR_COUNT,
 } cx_error;
@@ -93,3 +94,9 @@ typedef struct cx_doc {
 } cx_doc;
 
 cx_doc cx_parse(char* data, u32 len, bool strict);
+#ifdef _WIN32
+#include <windows.h>
+static HANDLE get_file_handle(const char* file_name, bool write);
+u64 read_file(const char* file_name, char** file_content);
+cx_doc cx_parse_file(char* filename, bool strict);
+#endif
