@@ -586,14 +586,14 @@ u64 cx_read_file(const char* file_name, char** file_content)
     HANDLE hFile = cx_get_file_handle(file_name, false);
     LARGE_INTEGER file_size_li;
     if (GetFileSizeEx(hFile, &file_size_li) == 0) {
-        return null;
+        return 0;
     }
     size_t file_size = file_size_li.QuadPart;
 
     char* buf = malloc(file_size+1);
     DWORD read = 0;
     if (ReadFile(hFile, buf, file_size, &read, null) == 0 || read == 0) {
-        return null;
+        return 0;
     }
     CloseHandle(hFile);
     buf[file_size] = '\0';
@@ -604,7 +604,7 @@ u64 cx_read_file(const char* file_name, char** file_content)
 cx_doc cx_parse_file(char* filename, bool strict)
 {
     char* buf;
-    u64 file_size = read_file(filename, &buf);
+    u64 file_size = cx_read_file(filename, &buf);
     cx_doc result;
     if (file_size == 0) {
         result.err = CX_FILE_NOT_FOUND;
