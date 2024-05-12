@@ -552,7 +552,7 @@ cx_doc cx_parse(char* data, u32 len, bool strict)
 #ifdef _WIN32
 #include <windows.h>
 
-static HANDLE get_file_handle(const char* file_name, bool write) 
+static HANDLE cx_get_file_handle(const char* file_name, bool write) 
 {
 	HANDLE hFile;
 	hFile = CreateFile(file_name,
@@ -572,9 +572,18 @@ static HANDLE get_file_handle(const char* file_name, bool write)
     return hFile;
 }
 
-u64 read_file(const char* file_name, char** file_content)
+u64 cx_get_file_size(const char* file_name)
 {
-    HANDLE hFile = get_file_handle(file_name, false);
+    HANDLE hfile = cx_get_file_handle(file_name, false);
+    LARGE_INTEGER file_size;
+    if (GetFileSizeEx(hfile, &file_size) == 0) return 0;
+
+    return file_size.QuadPart;
+}
+
+u64 cx_read_file(const char* file_name, char** file_content)
+{
+    HANDLE hFile = cx_get_file_handle(file_name, false);
     LARGE_INTEGER file_size_li;
     if (GetFileSizeEx(hFile, &file_size_li) == 0) {
         return null;

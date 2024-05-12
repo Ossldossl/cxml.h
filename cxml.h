@@ -97,6 +97,7 @@ cx_doc cx_parse(char* data, u32 len, bool strict);
 #ifdef _WIN32
 #include <windows.h>
 static HANDLE get_file_handle(const char* file_name, bool write);
+u64 cx_get_file_size(const char* file_name);
 u64 read_file(const char* file_name, char** file_content);
 cx_doc cx_parse_file(char* filename, bool strict);
 #endif
